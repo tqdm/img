@@ -1,1 +1,1 @@
-Resources for use in `tqdm` publications.
+Resources for use in `tqdm` publications, statically hosted at <https://img.tqdm.ml>.
