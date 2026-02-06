@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- GitHub pages static site directory listing.
+1. modify GH_OWNER, GH_REPO, GH_BRANCH below
+2. place this file (or a symlink to it) anywhere in your GitHub pages site
+-->
+<html lang="en">
+<head>
+<link rel="schema.dcterms" href="http://purl.org/dc/terms/">
+<meta name="dcterms.rights" content="CC-BY-4.0">
+<meta name="dcterms.rightsHolder" content="https://github.com/casperdcl">
+<meta name="dcterms.dateCopyrighted" content="2026">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Files</title>
+</head>
+<body>
+<h1 id="dirname">.</h1>
+<a href="..">..</a>
+<div id="listing">Loading...</div>
+<script>
+const GH_OWNER = 'tqdm'; // modify this
+const GH_REPO = 'img'; // modify this
+const GH_BRANCH = 'src'; // modify this
+document.getElementById('dirname').textContent = window.location.pathname;
+document.getElementsByTagName('title')[0].textContent = `${window.location.pathname} | ${window.location.host}`;
+var listing = document.getElementById('listing');
+
+function traverse(tree, path) {
+  if (path.length === 0) return Promise.resolve(tree);
+  const next = path.shift();
+  return fetch(tree.tree.find(x => x.path === next).url)
+    .then(response => response.json())
+    .then(subtree => traverse(subtree, path))
+    .catch(error => { listing.textContent = 'Error loading directory: ' + error; });
+}
+fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/git/trees/${GH_BRANCH}`)
+  .then(response => response.json())
+  .then(tree => {
+    var path = window.location.pathname.split('/').filter(x => x.length > 0);
+    path.shift(); // remove GH_REPO prefix
+    traverse(tree, path).then(dir => {
+      listing.innerHTML = '<ul>' + dir.tree.filter(x => x.path != "index.html").map(
+        x => `<li><a href="${x.path}">${x.path}</a></li>`
+      ).join('') + '</ul>';
+    });
+  })
+  .catch(error => { listing.textContent = 'Error loading directory: ' + error; });
+</script>
+</body>
+</html>
